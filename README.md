@@ -9,13 +9,31 @@ Medium article: (will be updated)
 - Tensorflow 2.3.0
 - Keras 2.4.0
 
-### Detection Result
-
-<img src="docs/detections.jpg" width="1200">
-
-### Supported Models:
+### Supported Models
 - YOLOv3
 - YOLOv4
 
+### How to Use
+- Make a new directory named "weights"
+- Download pre-trained weights from official Darknet [website](https://pjreddie.com/darknet/yolo/) or your trained weights and put them into "weights" folder
+- Run YOLOv3: darkeras-yolov3.ipynb
+- Run YOLOv4: darkeras-yolov4.ipynb
+
+### Detection Result
+- Input
+<img src="docs/kite.jpg" width="800">
+
+- YOLOv3
+<img src="docs/detections_yolov3.jpg" width="800">
+
+- YOLOv4
+<img src="docs/detections.jpg" width="800">
+
+
+
+
+Have fun!
 
 LA Tran
+
+Korea, August 2021
