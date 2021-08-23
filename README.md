@@ -1,6 +1,6 @@
-# Darkeras: Execute YOLOv4 Object Detection on Keras with Darknet Pre-trained Weights
+# Darkeras: Execute YOLOv3/YOLOv4 Object Detection on Keras with Darknet Pre-trained Weights
 
-This project is to execute YOLOv4 object detector on Keras framework with Darknet pre-trained weights.
+This project is to execute YOLOv3/YOLOv4 object detector on Keras framework with Darknet pre-trained weights.
 
 Medium article: (will be updated)
 
@@ -14,8 +14,7 @@ Medium article: (will be updated)
 - YOLOv4
 
 ### How to Use
-- Make a new directory named "weights"
-- Download pre-trained weights from official Darknet [website](https://pjreddie.com/darknet/yolo/) or your trained weights and put them into "weights" folder
+- Put pre-trained weights from official Darknet [website](https://pjreddie.com/darknet/yolo/) or your trained weights into "weights" folder (If you use your model trained on your customed dataset, please change NUM_CLASS and ANCHORS in the notebooks)
 - Run YOLOv3: darkeras-yolov3.ipynb
 - Run YOLOv4: darkeras-yolov4.ipynb
 
