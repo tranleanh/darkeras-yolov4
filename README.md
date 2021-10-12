@@ -8,6 +8,13 @@ Medium article: (will be updated)
 - OpenCV
 - Tensorflow 2.3.0
 - Keras 2.4.0
+- Easydict
+- Matplotlib
+
+You can simply run:
+```bashrc
+$ pip install -r requirements.txt
+```
 
 ### Supported Models
 - YOLOv3
