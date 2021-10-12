@@ -78,6 +78,7 @@ def read_class_names(class_file_name):
         for ID, name in enumerate(data):
             names[ID] = name.strip('\n')
     return names
+    
 
 def load_config(FLAGS):
     if FLAGS.tiny:
@@ -253,85 +254,191 @@ def bbox_giou(bboxes1, bboxes2):
     return giou
 
 
-def bbox_ciou(bboxes1, bboxes2):
-    """
-    Complete IoU
-    @param bboxes1: (a, b, ..., 4)
-    @param bboxes2: (A, B, ..., 4)
-        x:X is 1:n or n:n or n:1
-    @return (max(a,A), max(b,B), ...)
-    ex) (4,):(3,4) -> (3,)
-        (2,1,4):(2,3,4) -> (2,3)
-    """
-    bboxes1_area = bboxes1[..., 2] * bboxes1[..., 3]
-    bboxes2_area = bboxes2[..., 2] * bboxes2[..., 3]
+# def bbox_ciou(bboxes1, bboxes2):
+#     """
+#     Complete IoU
+#     @param bboxes1: (a, b, ..., 4)
+#     @param bboxes2: (A, B, ..., 4)
+#         x:X is 1:n or n:n or n:1
+#     @return (max(a,A), max(b,B), ...)
+#     ex) (4,):(3,4) -> (3,)
+#         (2,1,4):(2,3,4) -> (2,3)
+#     """
+#     bboxes1_area = bboxes1[..., 2] * bboxes1[..., 3]
+#     bboxes2_area = bboxes2[..., 2] * bboxes2[..., 3]
 
-    bboxes1_coor = tf.concat(
-        [
-            bboxes1[..., :2] - bboxes1[..., 2:] * 0.5,
-            bboxes1[..., :2] + bboxes1[..., 2:] * 0.5,
-        ],
-        axis=-1,
-    )
-    bboxes2_coor = tf.concat(
-        [
-            bboxes2[..., :2] - bboxes2[..., 2:] * 0.5,
-            bboxes2[..., :2] + bboxes2[..., 2:] * 0.5,
-        ],
-        axis=-1,
-    )
+#     bboxes1_coor = tf.concat(
+#         [
+#             bboxes1[..., :2] - bboxes1[..., 2:] * 0.5,
+#             bboxes1[..., :2] + bboxes1[..., 2:] * 0.5,
+#         ],
+#         axis=-1,
+#     )
+#     bboxes2_coor = tf.concat(
+#         [
+#             bboxes2[..., :2] - bboxes2[..., 2:] * 0.5,
+#             bboxes2[..., :2] + bboxes2[..., 2:] * 0.5,
+#         ],
+#         axis=-1,
+#     )
 
-    left_up = tf.maximum(bboxes1_coor[..., :2], bboxes2_coor[..., :2])
-    right_down = tf.minimum(bboxes1_coor[..., 2:], bboxes2_coor[..., 2:])
+#     left_up = tf.maximum(bboxes1_coor[..., :2], bboxes2_coor[..., :2])
+#     right_down = tf.minimum(bboxes1_coor[..., 2:], bboxes2_coor[..., 2:])
 
-    inter_section = tf.maximum(right_down - left_up, 0.0)
-    inter_area = inter_section[..., 0] * inter_section[..., 1]
+#     inter_section = tf.maximum(right_down - left_up, 0.0)
+#     inter_area = inter_section[..., 0] * inter_section[..., 1]
 
-    union_area = bboxes1_area + bboxes2_area - inter_area
+#     union_area = bboxes1_area + bboxes2_area - inter_area
 
-    iou = tf.math.divide_no_nan(inter_area, union_area)
+#     iou = tf.math.divide_no_nan(inter_area, union_area)
 
-    enclose_left_up = tf.minimum(bboxes1_coor[..., :2], bboxes2_coor[..., :2])
-    enclose_right_down = tf.maximum(
-        bboxes1_coor[..., 2:], bboxes2_coor[..., 2:]
-    )
+#     enclose_left_up = tf.minimum(bboxes1_coor[..., :2], bboxes2_coor[..., :2])
+#     enclose_right_down = tf.maximum(
+#         bboxes1_coor[..., 2:], bboxes2_coor[..., 2:]
+#     )
 
-    enclose_section = enclose_right_down - enclose_left_up
+#     enclose_section = enclose_right_down - enclose_left_up
 
-    c_2 = enclose_section[..., 0] ** 2 + enclose_section[..., 1] ** 2
+#     c_2 = enclose_section[..., 0] ** 2 + enclose_section[..., 1] ** 2
 
-    center_diagonal = bboxes2[..., :2] - bboxes1[..., :2]
+#     center_diagonal = bboxes2[..., :2] - bboxes1[..., :2]
 
-    rho_2 = center_diagonal[..., 0] ** 2 + center_diagonal[..., 1] ** 2
+#     rho_2 = center_diagonal[..., 0] ** 2 + center_diagonal[..., 1] ** 2
 
-    diou = iou - tf.math.divide_no_nan(rho_2, c_2)
+#     diou = iou - tf.math.divide_no_nan(rho_2, c_2)
 
-    v = (
-        (
-            tf.math.atan(
-                tf.math.divide_no_nan(bboxes1[..., 2], bboxes1[..., 3])
-            )
-            - tf.math.atan(
-                tf.math.divide_no_nan(bboxes2[..., 2], bboxes2[..., 3])
-            )
-        )
-        * 2
-        / np.pi
-    ) ** 2
+#     v = (
+#         (
+#             tf.math.atan(
+#                 tf.math.divide_no_nan(bboxes1[..., 2], bboxes1[..., 3])
+#             )
+#             - tf.math.atan(
+#                 tf.math.divide_no_nan(bboxes2[..., 2], bboxes2[..., 3])
+#             )
+#         )
+#         * 2
+#         / np.pi
+#     ) ** 2
 
-    alpha = tf.math.divide_no_nan(v, 1 - iou + v)
+#     alpha = tf.math.divide_no_nan(v, 1 - iou + v)
 
-    ciou = diou - alpha * v
+#     ciou = diou - alpha * v
 
-    return ciou
+#     return ciou
+
+# def nms(bboxes, iou_threshold, sigma=0.3, method='nms'):
+#     """
+#     :param bboxes: (xmin, ymin, xmax, ymax, score, class)
+
+#     Note: soft-nms, https://arxiv.org/pdf/1704.04503.pdf
+#           https://github.com/bharatsingh430/soft-nms
+#     """
+#     classes_in_img = list(set(bboxes[:, 5]))
+#     best_bboxes = []
+
+#     for cls in classes_in_img:
+#         cls_mask = (bboxes[:, 5] == cls)
+#         cls_bboxes = bboxes[cls_mask]
+
+#         while len(cls_bboxes) > 0:
+#             max_ind = np.argmax(cls_bboxes[:, 4])
+#             best_bbox = cls_bboxes[max_ind]
+#             best_bboxes.append(best_bbox)
+#             cls_bboxes = np.concatenate([cls_bboxes[: max_ind], cls_bboxes[max_ind + 1:]])
+#             iou = bbox_iou(best_bbox[np.newaxis, :4], cls_bboxes[:, :4])
+#             weight = np.ones((len(iou),), dtype=np.float32)
+
+#             assert method in ['nms', 'soft-nms']
+
+#             if method == 'nms':
+#                 iou_mask = iou > iou_threshold
+#                 weight[iou_mask] = 0.0
+
+#             if method == 'soft-nms':
+#                 weight = np.exp(-(1.0 * iou ** 2 / sigma))
+
+#             cls_bboxes[:, 4] = cls_bboxes[:, 4] * weight
+#             score_mask = cls_bboxes[:, 4] > 0.
+#             cls_bboxes = cls_bboxes[score_mask]
+
+#     return best_bboxes
+
+
+def freeze_all(model, frozen=True):
+    model.trainable = not frozen
+    if isinstance(model, tf.keras.Model):
+        for l in model.layers:
+            freeze_all(l, frozen)
+
+
+def unfreeze_all(model, frozen=False):
+    model.trainable = not frozen
+    if isinstance(model, tf.keras.Model):
+        for l in model.layers:
+            unfreeze_all(l, frozen)
+
+
+def postprocess_boxes(pred_bbox, org_img_shape, input_size, score_threshold):
+
+    valid_scale=[0, np.inf]
+    pred_bbox = np.array(pred_bbox)
+
+    pred_xywh = pred_bbox[:, 0:4]
+    pred_conf = pred_bbox[:, 4]
+    pred_prob = pred_bbox[:, 5:]
+
+    # # (1) (x, y, w, h) --> (xmin, ymin, xmax, ymax)
+    pred_coor = np.concatenate([pred_xywh[:, :2] - pred_xywh[:, 2:] * 0.5,
+                                pred_xywh[:, :2] + pred_xywh[:, 2:] * 0.5], axis=-1)
+    # # (2) (xmin, ymin, xmax, ymax) -> (xmin_org, ymin_org, xmax_org, ymax_org)
+    org_h, org_w = org_img_shape
+
+    resize_ratio_w, resize_ratio_h = input_size/org_w, input_size/org_h
+    
+    pred_coor[:, 0::2] = pred_coor[:, 0::2] / resize_ratio_w
+    pred_coor[:, 1::2] = pred_coor[:, 1::2] / resize_ratio_h
+    
+    # # (3) clip some boxes those are out of range
+    pred_coor = np.concatenate([np.maximum(pred_coor[:, :2], [0, 0]),
+                                np.minimum(pred_coor[:, 2:], [org_w - 1, org_h - 1])], axis=-1)
+    invalid_mask = np.logical_or((pred_coor[:, 0] > pred_coor[:, 2]), (pred_coor[:, 1] > pred_coor[:, 3]))
+    pred_coor[invalid_mask] = 0
+
+    # # (4) discard some invalid boxes
+    bboxes_scale = np.sqrt(np.multiply.reduce(pred_coor[:, 2:4] - pred_coor[:, 0:2], axis=-1))
+    scale_mask = np.logical_and((valid_scale[0] < bboxes_scale), (bboxes_scale < valid_scale[1]))
+
+    # # (5) discard some boxes with low scores
+    classes = np.argmax(pred_prob, axis=-1)
+    scores = pred_conf * pred_prob[np.arange(len(pred_coor)), classes]
+    score_mask = scores > score_threshold
+    mask = np.logical_and(scale_mask, score_mask)
+    coors, scores, classes = pred_coor[mask], scores[mask], classes[mask]
+
+    return np.concatenate([coors, scores[:, np.newaxis], classes[:, np.newaxis]], axis=-1)
+
+
+def bboxes_iou(boxes1, boxes2):
+
+    boxes1 = np.array(boxes1)
+    boxes2 = np.array(boxes2)
+
+    boxes1_area = (boxes1[..., 2] - boxes1[..., 0]) * (boxes1[..., 3] - boxes1[..., 1])
+    boxes2_area = (boxes2[..., 2] - boxes2[..., 0]) * (boxes2[..., 3] - boxes2[..., 1])
+
+    left_up       = np.maximum(boxes1[..., :2], boxes2[..., :2])
+    right_down    = np.minimum(boxes1[..., 2:], boxes2[..., 2:])
+
+    inter_section = np.maximum(right_down - left_up, 0.0)
+    inter_area    = inter_section[..., 0] * inter_section[..., 1]
+    union_area    = boxes1_area + boxes2_area - inter_area
+    ious          = np.maximum(1.0 * inter_area / union_area, np.finfo(np.float32).eps)
+
+    return ious
+
 
 def nms(bboxes, iou_threshold, sigma=0.3, method='nms'):
-    """
-    :param bboxes: (xmin, ymin, xmax, ymax, score, class)
 
-    Note: soft-nms, https://arxiv.org/pdf/1704.04503.pdf
-          https://github.com/bharatsingh430/soft-nms
-    """
     classes_in_img = list(set(bboxes[:, 5]))
     best_bboxes = []
 
@@ -344,7 +451,7 @@ def nms(bboxes, iou_threshold, sigma=0.3, method='nms'):
             best_bbox = cls_bboxes[max_ind]
             best_bboxes.append(best_bbox)
             cls_bboxes = np.concatenate([cls_bboxes[: max_ind], cls_bboxes[max_ind + 1:]])
-            iou = bbox_iou(best_bbox[np.newaxis, :4], cls_bboxes[:, :4])
+            iou = bboxes_iou(best_bbox[np.newaxis, :4], cls_bboxes[:, :4])
             weight = np.ones((len(iou),), dtype=np.float32)
 
             assert method in ['nms', 'soft-nms']
@@ -362,14 +469,4 @@ def nms(bboxes, iou_threshold, sigma=0.3, method='nms'):
 
     return best_bboxes
 
-def freeze_all(model, frozen=True):
-    model.trainable = not frozen
-    if isinstance(model, tf.keras.Model):
-        for l in model.layers:
-            freeze_all(l, frozen)
-def unfreeze_all(model, frozen=False):
-    model.trainable = not frozen
-    if isinstance(model, tf.keras.Model):
-        for l in model.layers:
-            unfreeze_all(l, frozen)
 
