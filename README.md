@@ -2,7 +2,7 @@
 
 This project is to execute YOLOv3/YOLOv4 object detector on Keras framework with Darknet pre-trained weights.
 
-Medium article: (will be updated)
+Medium article: [Darkeras: Execute YOLOv3/YOLOv4 Object Detection on Keras with Darknet Pre-trained Weights](https://towardsdatascience.com/darkeras-execute-yolov3-yolov4-object-detection-on-keras-with-darknet-pre-trained-weights-5e8428b959e2)
 
 ### Dependencies
 - OpenCV
